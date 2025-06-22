@@ -1,0 +1,84 @@
+{
+  "users": [
+    {
+      "email": "admin1@mail.com",
+      "password": "$2a$10$WCUiCKzG8/9jQAlVSKkl0.J14stEQasgYgVlzS1NLbMgTYpL3j/7e",
+      "id": 1
+    }
+  ],
+  "products": [
+    {
+      "id": "1750524379042",
+      "title": "asdasdasdsadasdsdasd",
+      "description": "sadasd",
+      "dueDate": "adasd",
+      "priority": "asda",
+      "status": "asad",
+      "tags": [
+        "asda"
+      ]
+    },
+    {
+      "id": "1750525002701",
+      "title": "jjjdjajajajaja",
+      "description": "jaja",
+      "dueDate": "jajaja",
+      "priority": "jaja",
+      "status": "jaja",
+      "tags": [
+        "ajjaja"
+      ]
+    },
+    {
+      "id": "7",
+      "title": "Produk A",
+      "description": "Deskripsi produk A",
+      "dueDate": "2025-06-21",
+      "priority": "High",
+      "status": "Available",
+      "tags": [
+        "tag1",
+        "tag2"
+      ]
+    },
+    {
+      "id": "8",
+      "userId": "1",
+      "title": "Produk A",
+      "description": "Deskripsi produk A",
+      "dueDate": "2025-06-21",
+      "priority": "High",
+      "status": "Available",
+      "tags": [
+        "tag1",
+        "tag2"
+      ]
+    },
+    {
+      "id": "9",
+      "userId": "1",
+      "title": "Produk A",
+      "description": "Deskripsi produk A",
+      "dueDate": "2025-06-21",
+      "priority": "High",
+      "status": "Available",
+      "tags": [
+        "tag1",
+        "tag2"
+      ]
+    },
+    {
+      "id": "10",
+      "userId": "1",
+      "title": "Produk A",
+      "description": "Deskripsi produk A",
+      "dueDate": "2025-06-21",
+      "priority": "High",
+      "status": "Available",
+      "tags": [
+        "tag1",
+        "tag2"
+      ]
+    }
+  ]
+}

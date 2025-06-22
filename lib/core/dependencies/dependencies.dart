@@ -1,0 +1,24 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_caching/features/auth/data/datasources/local/auth_local_data_source.dart';
+import 'package:flutter_caching/features/auth/data/datasources/remote/auth_remote_data_source.dart';
+import 'package:flutter_caching/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:flutter_caching/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_caching/features/auth/domain/usecases/check_auth_status_use_case.dart';
+import 'package:flutter_caching/features/auth/domain/usecases/login_use_case.dart';
+import 'package:flutter_caching/features/auth/domain/usecases/logout_use_case.dart';
+import 'package:flutter_caching/features/auth/presentation/provider/auth_provider.dart';
+import 'package:flutter_caching/features/product/data/datasources/local/product_local_data_source.dart';
+import 'package:flutter_caching/features/product/data/datasources/local/product_local_data_source_impl.dart';
+import 'package:flutter_caching/features/product/data/datasources/remote/product_remote_data_source.dart';
+import 'package:flutter_caching/features/product/data/repositories/product_repository_impl.dart';
+import 'package:flutter_caching/features/product/domain/repositories/product_repository.dart';
+import 'package:flutter_caching/features/product/domain/usecases/add_product_use_case.dart';
+import 'package:flutter_caching/features/product/domain/usecases/delete_product_use_case.dart';
+import 'package:flutter_caching/features/product/domain/usecases/fetch_product_by_id_use_case.dart';
+import 'package:flutter_caching/features/product/domain/usecases/fetch_product_use_case.dart';
+import 'package:flutter_caching/features/product/domain/usecases/update_product_use_case.dart';
+import 'package:flutter_caching/features/product/presentation/providers/product_provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_it/get_it.dart';
+
+part 'dependencies_main.dart';

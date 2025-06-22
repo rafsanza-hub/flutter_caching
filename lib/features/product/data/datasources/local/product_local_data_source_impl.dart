@@ -1,4 +1,5 @@
 import 'package:flutter_caching/core/error/exception.dart';
+import 'package:flutter_caching/core/utils/logger.dart';
 import 'package:flutter_caching/features/product/data/collections/cache_collection.dart';
 import 'package:flutter_caching/features/product/data/collections/product_collection.dart';
 import 'package:isar/isar.dart';
@@ -10,7 +11,6 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   static late final Future<Isar> _isarDb;
   static bool _isInitialized = false;
 
-  static const String _cacheTimestampCollectionName = 'cacheTimestamps';
   static const int _productsListCacheTimestampId = 0;
 
   // Constructor
@@ -49,7 +49,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
         await isar.productCollections.clear();
         await isar.productCollections.putAll(products);
       });
-      print('Produk berhasil di-cache di Isar.');
+      AppLogger.d('Produk berhasil di-cache di Isar.');
     } catch (e) {
       throw CacheException('Gagal melakukan cache produk: $e');
     }
@@ -62,7 +62,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       await isar.writeTxn(() async {
         await isar.productCollections.put(product);
       });
-      print(
+      AppLogger.d(
           'Produk berhasil disisipkan/diperbarui di cache Isar: ${product.id}');
     } catch (e) {
       throw CacheException('Gagal menyisipkan/memperbarui produk di cache: $e');
@@ -76,7 +76,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       await isar.writeTxn(() async {
         await isar.productCollections.put(product);
       });
-      print('Produk individual berhasil di-cache di Isar: ${product.id}');
+      AppLogger.d('Produk individual berhasil di-cache di Isar: ${product.id}');
     } catch (e) {
       throw CacheException('Gagal melakukan cache produk individual: $e');
     }
@@ -97,9 +97,9 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
             .idEqualTo(id)
             .deleteAll();
         if (deletedCount == 0) {
-          print('Produk dengan ID $id tidak ditemukan di cache untuk dihapus.');
+          AppLogger.d('Produk dengan ID $id tidak ditemukan di cache untuk dihapus.');
         } else {
-          print('Produk dengan ID $id berhasil dihapus dari cache Isar.');
+          AppLogger.d('Produk dengan ID $id berhasil dihapus dari cache Isar.');
         }
       });
     } catch (e) {
@@ -113,9 +113,9 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
       final isar = await _isarDb;
       final product = await isar.productCollections.get(int.parse(id));
       if (product == null) {
-        print('Produk $id tidak ditemukan di cache.');
+        AppLogger.d('Produk $id tidak ditemukan di cache.');
       } else {
-        print('Produk $id ditemukan di cache.');
+        AppLogger.d('Produk $id ditemukan di cache.');
       }
       return product;
     } catch (e) {
@@ -128,7 +128,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
     try {
       final isar = await _isarDb;
       final products = await isar.productCollections.where().findAll();
-      print('Mengambil ${products.length} produk dari cache.');
+      AppLogger.d('Mengambil ${products.length} produk dari cache.');
       return products;
     } catch (e) {
       throw CacheException('Gagal mengambil daftar produk dari cache: $e');
@@ -157,7 +157,7 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           );
         }
       });
-      print('Timestamp cache daftar produk berhasil diperbarui.');
+      AppLogger.d('Timestamp cache daftar produk berhasil diperbarui.');
     } catch (e) {
       throw CacheException('Gagal memperbarui timestamp cache: $e');
     }
@@ -172,9 +172,9 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
           .cacheIdEqualTo(_productsListCacheTimestampId)
           .findFirst();
       if (cacheEntry != null) {
-        print('Timestamp cache ditemukan: ${cacheEntry.timestamp}');
+        AppLogger.d('Timestamp cache ditemukan: ${cacheEntry.timestamp}');
       } else {
-        print('Timestamp cache tidak ditemukan.');
+        AppLogger.d('Timestamp cache tidak ditemukan.');
       }
       return cacheEntry?.timestamp;
     } catch (e) {
