@@ -49,7 +49,6 @@ Future<void> configureDependencies() async {
   // Provider
   getIt.registerFactory(
     () => AuthProvider(
-      storage: getIt<SecureStorageService>(),
       loginUseCase: getIt<LoginUseCase>(),
       logoutUseCase: getIt<LogoutUseCase>(),
       checkAuthStatusUseCase: getIt<CheckAuthStatusUseCase>(),
@@ -98,7 +97,7 @@ Future<void> configureDependencies() async {
   );
   getIt.registerFactory(
     () => ProductDetailProvider(
-     fetchProductsUseCase: FetchProductByIdUseCase(getIt<ProductRepository>()),
+      fetchProductsUseCase: FetchProductByIdUseCase(getIt<ProductRepository>()),
     ),
   );
 }

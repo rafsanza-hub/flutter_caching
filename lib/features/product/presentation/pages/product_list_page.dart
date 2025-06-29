@@ -51,13 +51,34 @@ class _ProductListPageState extends State<ProductListPage> {
                         final product = productProvider.products[index];
                         AppLogger.d('Produk ${product.id}: ${product.title}');
                         return ListTile(
-                          leading: CachedNetworkImage(
-                            width: 50,
-                            height: 50,
-                            imageUrl: product.imageUrl,
-                            cacheKey: product.id.toString(),
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: product.imageUrl,
+                              cacheKey: 'product_${product.id}_image',
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              memCacheWidth: 50,
+                              memCacheHeight: 50,
+                              maxWidthDiskCache: 100,
+                              maxHeightDiskCache: 100,
+                              placeholder: (context, url) => Container(
+                                width: 50,
+                                height: 50,
+                                color: Colors.grey[300],
+                                child: const Center(
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                width: 50,
+                                height: 50,
+                                color: Colors.grey[300],
+                                child: const Icon(Icons.broken_image,
+                                    color: Colors.red),
+                              ),
                             ),
                           ),
                           title: Text(product.title),

@@ -1,4 +1,3 @@
-import 'package:flutter_caching/core/error/exception.dart';
 import 'package:flutter_caching/core/utils/logger.dart';
 import 'package:flutter_caching/features/product/data/datasources/local/product_local_data_source.dart';
 import 'package:flutter_caching/features/product/data/datasources/remote/product_remote_data_source.dart';
@@ -17,143 +16,142 @@ class ProductRepositoryImpl implements ProductRepository {
     this.cacheTTL = const Duration(minutes: 30),
   });
 
+  // Di dalam ProductRepositoryImpl
+
   @override
   Future<List<Product>> fetchProducts({bool forceRefresh = false}) async {
-    AppLogger.d('forceRefresh: $forceRefresh');
+    // 1. Cek cache jika tidak ada paksaan refresh
     if (!forceRefresh) {
-      try {
+      final lastCacheTime = await localDataSource.getLastCacheTimestamp();
+      if (lastCacheTime != null &&
+          DateTime.now().difference(lastCacheTime) < cacheTTL) {
         final cachedProducts = await localDataSource.getCachedProducts();
-        final lastCacheTime = await localDataSource.getLastCacheTimestamp();
-
-        final isValid = cachedProducts.isNotEmpty &&
-            lastCacheTime != null &&
-            DateTime.now().difference(lastCacheTime) < cacheTTL;
-
-        if (isValid) {
-          AppLogger.d('[Repository] Ambil dari cache');
-          return cachedProducts.map((e) => e.toEntity()).toList();
-        }
         if (cachedProducts.isNotEmpty) {
-          AppLogger.d('[Repository] Cache expired, coba ambil dari remote');
+          AppLogger.d('[Repository] Data valid dari cache');
+          return cachedProducts.map((p) => p.toEntity()).toList();
         }
-      } catch (e) {
-        AppLogger.e('[Repository] Cache error, coba remote: $e');
       }
     }
 
+    // 2. Jika cache tidak valid atau ada paksaan refresh, ambil dari remote
     try {
-      AppLogger.d('[Repository] Ambil dari remote');
+      AppLogger.d('[Repository] Mengambil dari remote');
       final remoteProducts = await remoteDataSource.fetchProducts();
 
-      // Cache ke lokal
+      // Hapus cache lama dan simpan yang baru
       await localDataSource
-          .cacheProducts(remoteProducts.map((e) => e.toCollection()).toList());
+          .cacheProducts(remoteProducts.map((p) => p.toCollection()).toList());
       await localDataSource.updateLastCacheTimestamp(DateTime.now());
 
-      return remoteProducts.map((e) => e.toEntity()).toList();
+      return remoteProducts.map((p) => p.toEntity()).toList();
     } catch (e) {
-      AppLogger.e('[Repository] Error remote: $e. Fallback ke cache.');
-      try {
-        final fallback = await localDataSource.getCachedProducts();
-        if (fallback.isNotEmpty) {
-          return fallback.map((e) => e.toEntity()).toList();
-        } else {
-          throw Exception('Gagal fetch remote dan cache kosong.');
-        }
-      } catch (e2) {
-        throw Exception('Gagal ambil data: $e2');
+      // 3. Jika remote gagal, fallback ke cache sebagai upaya terakhir
+      AppLogger.e(
+          '[Repository] Gagal mengambil dari remote: $e. Fallback ke cache.');
+      final cachedProducts = await localDataSource.getCachedProducts();
+      if (cachedProducts.isNotEmpty) {
+        return cachedProducts.map((p) => p.toEntity()).toList();
       }
+      // Jika remote dan cache gagal, lempar error
+      throw Exception('Gagal mengambil data dari server dan cache kosong.');
     }
   }
 
   @override
   Future<Product> fetchProductById(int id) async {
     try {
-      AppLogger.d('Mengambil detail produk $id dari remote.');
+      // 1. Coba ambil dari cache dulu
+      final cachedProduct = await localDataSource.getCachedProductById(id);
+      if (cachedProduct != null) {
+        AppLogger.d('Produk $id ditemukan di cache.');
+        return cachedProduct.toEntity();
+      }
+
+      // 2. Jika cache tidak ada, ambil dari remote
+      AppLogger.d('Produk $id tidak ada di cache. Mengambil dari remote.');
       final remoteProduct = await remoteDataSource.fetchProductById(id);
+
+      // 3. Simpan ke cache dan kembalikan
       await localDataSource.cacheProduct(remoteProduct.toCollection());
       return remoteProduct.toEntity();
-    } on NetworkException catch (e) {
-      AppLogger.d(
-          'Error jaringan: ${e.message}. Mengambil detail produk $id dari cache sebagai fallback.');
-      try {
-        final local = await localDataSource.getCachedProductById(id);
-        if (local != null) {
-          return local.toEntity();
-        } else {
-          throw NetworkException(
-              'Tidak ada koneksi dan detail produk $id tidak ada di cache.');
-        }
-      } on CacheException catch (e) {
-        throw CacheException(
-            'Gagal mengambil detail produk $id dari cache: ${e.message}');
-      }
     } catch (e) {
-      AppLogger.d(
-          'Terjadi error tak terduga saat fetch detail produk $id dari remote: $e. Mencoba dari cache.');
-      try {
-        final local = await localDataSource.getCachedProductById(id);
-        if (local != null) {
-          return local.toEntity();
-        } else {
-          rethrow;
-        }
-      } on CacheException catch (e) {
-        throw CacheException(
-            'Gagal mengambil detail produk $id dari cache setelah error tak terduga: ${e.message}');
-      }
+      AppLogger.e('Gagal mengambil produk $id: $e');
+      throw Exception('Gagal mengambil produk. Periksa koneksi Anda.');
     }
   }
 
   @override
   Future<void> addProduct(Product product) async {
-    AppLogger.d('Menambahkan produk: ${product.id}');
     final model = ProductModel.fromEntity(product);
-    AppLogger.d('Menambahkan produk: ${model.id}');
+    AppLogger.d('Mencoba menambahkan produk ke server: ${product.id}');
 
-    final collection = model.toCollection();
     try {
+      // Langkah 1: Kirim data ke server terlebih dahulu.
+      // Ini adalah operasi yang paling krusial.
       await remoteDataSource.addProduct(model);
-      await localDataSource
-          .insertProduct(collection); // Pastikan konsisten di lokal
-      AppLogger.d('Produk berhasil ditambahkan di remote dan lokal.');
-    } on NetworkException catch (e) {
-      throw NetworkException(
-          'Gagal menambahkan produk (jaringan/server error): ${e.message}');
+
+      // Langkah 2: HANYA JIKA remote berhasil, perbarui cache lokal.
+      // Ini memastikan cache lokal tidak akan memiliki data
+      // yang sebenarnya tidak pernah berhasil disimpan di server.
+      await localDataSource.insertProduct(model.toCollection());
+
+      AppLogger.d(
+          'Produk berhasil ditambahkan di server dan disinkronkan ke cache.');
     } catch (e) {
-      throw Exception('Gagal menambahkan produk: $e');
+      // Langkah 3: Jika terjadi error APAPUN, tangkap dan lempar satu exception yang jelas.
+      AppLogger.e('Gagal total saat menambahkan produk: $e');
+      throw Exception(
+          'Gagal menambahkan produk. Pastikan Anda terhubung ke internet.');
     }
   }
 
   @override
   Future<void> updateProduct(Product product) async {
     final model = ProductModel.fromEntity(product);
-    final collection = model.toCollection();
-    AppLogger.d('Memperbarui produk: ${product.id}');
+    AppLogger.d('Mencoba memperbarui produk di server: ${product.id}');
+
     try {
+      // Langkah 1: Lakukan pembaruan di server terlebih dahulu.
+      // Ini adalah operasi kritis yang menentukan kebenaran data.
       await remoteDataSource.updateProduct(product.id, model);
-      await localDataSource
-          .updateProduct(collection);
-      AppLogger.d('Produk  berhasil diperbarui di remote dan lokal.');
-    } on NetworkException catch (e) {
-      throw NetworkException(
-          'Gagal memperbarui produk (jaringan/server error): ${e.message}');
+
+      // Langkah 2: HANYA JIKA remote berhasil, perbarui cache lokal.
+      // Ini memastikan cache selalu sinkron dengan state terakhir yang berhasil di server.
+      await localDataSource.updateProduct(model.toCollection());
+
+      AppLogger.d(
+          'Produk ${product.id} berhasil diperbarui di server dan disinkronkan ke cache.');
     } catch (e) {
-      throw Exception('Gagal memperbarui produk: $e');
+      // Langkah 3: Jika terjadi error APAPUN (jaringan, server, dll.),
+      // tangkap dan lempar satu exception yang terpadu.
+      AppLogger.e('Gagal total saat memperbarui produk ${product.id}: $e');
+      throw Exception(
+          'Gagal memperbarui produk. Pastikan Anda terhubung ke internet.');
     }
   }
 
   @override
   Future<void> deleteProduct(int id) async {
+    AppLogger.d('Mencoba menghapus produk di server: $id');
+
     try {
+      // Langkah 1: Hapus dari server terlebih dahulu.
+      // Ini adalah langkah kritis yang menentukan keberhasilan operasi.
       await remoteDataSource.deleteProduct(id);
+
+      // Langkah 2: HANYA JIKA remote berhasil, hapus dari cache lokal.
+      // Ini menjamin cache lokal tidak akan salah (misalnya, masih menyimpan
+      // produk yang sebenarnya sudah terhapus di server).
       await localDataSource.deleteProduct(id);
-      AppLogger.d('Produk $id berhasil dihapus dari remote dan lokal.');
-    } on NetworkException catch (e) {
-      throw NetworkException(
-          'Gagal menghapus produk (jaringan/server error): ${e.message}');
+
+      AppLogger.d(
+          'Produk $id berhasil dihapus dari server dan disinkronkan ke cache.');
     } catch (e) {
-      throw Exception('Gagal menghapus produk: $e');
+      // Langkah 3: Jika terjadi error APAPUN saat menghubungi server,
+      // batalkan seluruh operasi dan lempar satu exception.
+      AppLogger.e('Gagal total saat menghapus produk $id: $e');
+      throw Exception(
+          'Gagal menghapus produk. Pastikan Anda terhubung ke internet.');
     }
   }
 }
