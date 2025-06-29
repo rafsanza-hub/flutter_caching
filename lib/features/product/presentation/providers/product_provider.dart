@@ -5,7 +5,7 @@ import 'package:flutter_caching/features/product/domain/usecases/delete_product_
 import 'package:flutter_caching/features/product/domain/usecases/fetch_product_by_id_use_case.dart'; //
 import 'package:flutter_caching/features/product/domain/usecases/fetch_product_use_case.dart';
 import 'package:flutter_caching/features/product/domain/usecases/update_product_use_case.dart';
-import 'package:logger/logger.dart'; //
+import 'package:logger/logger.dart';
 
 class ProductProvider extends ChangeNotifier {
   final FetchProductUseCase _fetchProductsUseCase;

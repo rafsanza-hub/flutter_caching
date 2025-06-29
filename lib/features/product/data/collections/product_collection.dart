@@ -15,7 +15,7 @@ class ProductCollection {
   late String dueDate;
   late String priority;
   late String status;
-
+  late String imageUrl;
   late List<String> tags;
 
   ProductCollection({
@@ -26,6 +26,7 @@ class ProductCollection {
     required this.dueDate,
     required this.priority,
     required this.status,
+    required this.imageUrl,
     required this.tags,
   });
 
@@ -38,6 +39,7 @@ class ProductCollection {
       dueDate: dueDate,
       priority: priority,
       status: status,
+      imageUrl: imageUrl,
       tags: tags,
     );
   }
@@ -51,6 +53,7 @@ class ProductCollection {
       dueDate: product.dueDate,
       priority: product.priority,
       status: product.status,
+      imageUrl: product.imageUrl,
       tags: product.tags,
     );
   }
@@ -63,6 +66,7 @@ class ProductCollection {
       dueDate: dueDate,
       priority: priority,
       status: status,
+      imageUrl: imageUrl,
       tags: tags,
     );
   }
@@ -76,6 +80,7 @@ class ProductCollection {
       dueDate: model.dueDate,
       priority: model.priority,
       status: model.status,
+      imageUrl: model.imageUrl,
       tags: model.tags,
     );
   }

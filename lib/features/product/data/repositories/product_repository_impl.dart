@@ -133,7 +133,7 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       await remoteDataSource.updateProduct(product.id, model);
       await localDataSource
-          .updateProduct(collection); // Pastikan konsisten di lokal
+          .updateProduct(collection);
       AppLogger.d('Produk  berhasil diperbarui di remote dan lokal.');
     } on NetworkException catch (e) {
       throw NetworkException(

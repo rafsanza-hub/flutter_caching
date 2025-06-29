@@ -96,4 +96,9 @@ Future<void> configureDependencies() async {
       deleteProductUseCase: getIt<DeleteProductUseCase>(),
     ),
   );
+  getIt.registerFactory(
+    () => ProductDetailProvider(
+     fetchProductsUseCase: FetchProductByIdUseCase(getIt<ProductRepository>()),
+    ),
+  );
 }

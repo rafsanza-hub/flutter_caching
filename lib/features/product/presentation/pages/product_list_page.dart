@@ -1,6 +1,9 @@
-// features/product/presentation/screens/product_list_page.dart
+import 'dart:math';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_caching/core/utils/logger.dart';
+import 'package:flutter_caching/features/product/presentation/pages/product_detail_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_caching/features/product/domain/entities/product.dart';
 import 'package:flutter_caching/features/product/presentation/providers/product_provider.dart';
@@ -17,8 +20,9 @@ class _ProductListPageState extends State<ProductListPage> {
   void initState() {
     super.initState();
 
-    Future.microtask(() =>
-        Provider.of<ProductProvider>(context, listen: false).fetchProducts());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ProductProvider>(context, listen: false).fetchProducts();
+    });
   }
 
   @override
@@ -47,6 +51,15 @@ class _ProductListPageState extends State<ProductListPage> {
                         final product = productProvider.products[index];
                         AppLogger.d('Produk ${product.id}: ${product.title}');
                         return ListTile(
+                          leading: CachedNetworkImage(
+                            width: 50,
+                            height: 50,
+                            imageUrl: product.imageUrl,
+                            cacheKey: product.id.toString(),
+                            placeholder: (context, url) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
                           title: Text(product.title),
                           subtitle: Text(
                               '${product.description} - ${product.status}'),
@@ -70,6 +83,11 @@ class _ProductListPageState extends State<ProductListPage> {
                             ],
                           ),
                           onTap: () async {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (context) {
+                                return ProductDetailPage(productId: product.id);
+                              },
+                            ));
                             final fetchedProduct = await productProvider
                                 .fetchProductById(product.id);
                             if (fetchedProduct != null) {
@@ -147,6 +165,8 @@ class _ProductListPageState extends State<ProductListPage> {
                 dueDate: dueDateController.text,
                 priority: priorityController.text,
                 status: statusController.text,
+                imageUrl:
+                    "https://picsum.photos/id/${Random().nextInt(1000)}/600/600",
                 tags: tagsController.text
                     .split(',')
                     .map((e) => e.trim())
@@ -216,6 +236,7 @@ class _ProductListPageState extends State<ProductListPage> {
                 dueDate: dueDateController.text,
                 priority: priorityController.text,
                 status: statusController.text,
+                imageUrl: product.imageUrl,
                 tags: tagsController.text
                     .split(',')
                     .map((e) => e.trim())

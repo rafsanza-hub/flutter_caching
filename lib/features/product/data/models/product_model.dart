@@ -8,6 +8,7 @@ class ProductModel {
   final String dueDate;
   final String priority;
   final String status;
+  final String imageUrl;
   final List<String> tags;
 
   ProductModel({
@@ -17,6 +18,7 @@ class ProductModel {
     required this.dueDate,
     required this.priority,
     required this.status,
+    required this.imageUrl,
     required this.tags,
   });
 
@@ -28,6 +30,7 @@ class ProductModel {
       'dueDate': dueDate,
       'priority': priority,
       'status': status,
+      'imageUrl': imageUrl,
       'tags': tags,
     };
   }
@@ -40,6 +43,7 @@ class ProductModel {
       dueDate: map['dueDate'] as String,
       priority: map['priority'] as String,
       status: map['status'] as String,
+      imageUrl: map['imageUrl'],
       tags: List<String>.from(
           map['tags'] as List<dynamic>), // Correct way to cast
       // Or, more robustly, if tags could be null:
@@ -55,6 +59,7 @@ class ProductModel {
       dueDate: product.dueDate,
       priority: product.priority,
       status: product.status,
+      imageUrl: product.imageUrl,
       tags: product.tags,
     );
   }
@@ -67,6 +72,7 @@ class ProductModel {
       dueDate: dueDate,
       priority: priority,
       status: status,
+      imageUrl: imageUrl,
       tags: tags,
     );
   }
@@ -80,6 +86,7 @@ class ProductModel {
       dueDate: dueDate,
       priority: priority,
       status: status,
+      imageUrl: imageUrl,
       tags: tags,
     );
   }
@@ -92,6 +99,7 @@ class ProductModel {
       dueDate: collection.dueDate,
       priority: collection.priority,
       status: collection.status,
+      imageUrl: collection.imageUrl,
       tags: collection.tags,
     );
   }
