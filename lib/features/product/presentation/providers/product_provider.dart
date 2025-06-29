@@ -1,4 +1,3 @@
-// features/product/presentation/providers/product_provider.dart
 import 'package:flutter/foundation.dart';
 import 'package:flutter_caching/features/product/domain/entities/product.dart';
 import 'package:flutter_caching/features/product/domain/usecases/add_product_use_case.dart'; //
@@ -18,6 +17,7 @@ class ProductProvider extends ChangeNotifier {
   List<Product> _products = [];
   List<Product> get products => _products;
 
+  // ignore: prefer_final_fields
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
@@ -36,24 +36,24 @@ class ProductProvider extends ChangeNotifier {
         _updateProductUseCase = updateProductUseCase,
         _deleteProductUseCase = deleteProductUseCase;
 
-  Future<void> fetchProducts() async {
-    _isLoading = true;
+  Future<void> fetchProducts({bool forceRefresh = false}) async {
+    // _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      _products = await _fetchProductsUseCase(); //
+      _products = await _fetchProductsUseCase(forceRefresh: forceRefresh);
     } catch (e) {
       _errorMessage = e.toString();
       _products = [];
     } finally {
-      _isLoading = false;
+      // _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<Product?> fetchProductById(String id) async {
-    _isLoading = true;
+  Future<Product?> fetchProductById(int id) async {
+    // _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
@@ -63,14 +63,14 @@ class ProductProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
-      _isLoading = false;
+      // _isLoading = false;
       notifyListeners();
     }
     return product;
   }
 
   Future<void> addProduct(Product product) async {
-    _isLoading = true;
+    // _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
@@ -78,42 +78,43 @@ class ProductProvider extends ChangeNotifier {
       await _addProductUseCase(product); //
       await fetchProducts();
     } catch (e) {
+      Logger().e('Error adding product: $_errorMessage');
+
       _errorMessage = e.toString();
     } finally {
-      _isLoading = false;
-      Logger().e('Error adding product: $_errorMessage');
+      // _isLoading = false;
       notifyListeners();
     }
   }
 
   Future<void> updateProduct(Product product) async {
-    _isLoading = true;
+    // _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _updateProductUseCase.call(product); 
+      await _updateProductUseCase.call(product);
       await fetchProducts();
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
-      _isLoading = false;
+      // _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> deleteProduct(String id) async {
-    _isLoading = true;
+  Future<void> deleteProduct(int id) async {
+    // _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      await _deleteProductUseCase.call(id);
+      await _deleteProductUseCase(id);
       await fetchProducts();
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
-      _isLoading = false;
+      // _isLoading = false;
       notifyListeners();
     }
   }

@@ -36,7 +36,7 @@ class _ProductRemoteDataSource implements ProductRemoteDataSource {
     )
         .compose(
           _dio.options,
-          '/',
+          '',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -59,7 +59,7 @@ class _ProductRemoteDataSource implements ProductRemoteDataSource {
   }
 
   @override
-  Future<ProductModel> fetchProductById(String id) async {
+  Future<ProductModel> fetchProductById(int id) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -105,7 +105,7 @@ class _ProductRemoteDataSource implements ProductRemoteDataSource {
     )
         .compose(
           _dio.options,
-          '/',
+          '',
           queryParameters: queryParameters,
           data: _data,
         )
@@ -119,9 +119,9 @@ class _ProductRemoteDataSource implements ProductRemoteDataSource {
 
   @override
   Future<void> updateProduct(
-    String id,
+    int id,
     ProductModel product,
-  ) async { 
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -147,7 +147,7 @@ class _ProductRemoteDataSource implements ProductRemoteDataSource {
   }
 
   @override
-  Future<void> deleteProduct(String id) async {
+  Future<void> deleteProduct(int id) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};

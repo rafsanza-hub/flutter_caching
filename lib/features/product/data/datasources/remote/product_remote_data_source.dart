@@ -9,19 +9,19 @@ part 'product_remote_data_source.g.dart';
 abstract class ProductRemoteDataSource {
   factory ProductRemoteDataSource(Dio dio) = _ProductRemoteDataSource;
 
-  @GET('/')
+  @GET('')
   Future<List<ProductModel>> fetchProducts();
 
   @GET('/{id}')
-  Future<ProductModel> fetchProductById(@Path("id") String id);
+  Future<ProductModel> fetchProductById(@Path("id") int id);
 
-  @POST('/')
+  @POST('')
   Future<void> addProduct(@Body() ProductModel product);
 
   @PUT('/{id}')
   Future<void> updateProduct(
-      @Path("id") String id, @Body() ProductModel product);
+      @Path("id") int id, @Body() ProductModel product);
 
   @DELETE('/{id}')
-  Future<void> deleteProduct(@Path("id") String id);
+  Future<void> deleteProduct(@Path("id") int id);
 }

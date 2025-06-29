@@ -6,7 +6,7 @@ class FetchProductByIdUseCase {
 
   FetchProductByIdUseCase(this._productRepository);
 
-  Future<Product> call(String productId) async {
+  Future<Product> call(int productId) async {
     return await _productRepository.fetchProductById(productId);
   }
 }

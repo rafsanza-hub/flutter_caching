@@ -7,6 +7,10 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton(() => Dio());
   getIt.registerLazySingleton(() => const FlutterSecureStorage());
 
+  // Services
+  getIt.registerLazySingleton(
+      () => SecureStorageService(storage: getIt())); // Tambahkan ini
+
   // Setup interceptors
   final dio = getIt<Dio>();
   dio.interceptors.add(LogInterceptor(
@@ -16,6 +20,9 @@ Future<void> configureDependencies() async {
     error: true,
   ));
 
+  dio.interceptors.add(JwtInterceptor(getIt<SecureStorageService>()));
+  // Kita akan menambahkan JWT interceptor di sini nanti
+
 // Auth Dependencies
   // Data sources
   getIt.registerLazySingleton<AuthRemoteDataSource>(
@@ -23,9 +30,8 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(secureStorage: getIt()),
+    () => AuthLocalDataSourceImpl(secureStorageService: getIt()), // Ubah ini
   );
-
   // Repository
   getIt.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
@@ -35,22 +41,25 @@ Future<void> configureDependencies() async {
   );
 
   // Use cases
-  getIt.registerLazySingleton(() => LoginUseCase(getIt()));
-  getIt.registerLazySingleton(() => LogoutUseCase(getIt()));
-  getIt.registerLazySingleton(() => CheckAuthStatusUseCase(getIt()));
+  getIt.registerLazySingleton(() => LoginUseCase(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(() => LogoutUseCase(getIt<AuthRepository>()));
+  getIt.registerLazySingleton(
+      () => CheckAuthStatusUseCase(getIt<AuthRepository>()));
 
   // Provider
   getIt.registerFactory(
     () => AuthProvider(
-      loginUseCase: getIt(),
-      logoutUseCase: getIt(),
-      checkAuthStatusUseCase: getIt(),
+      storage: getIt<SecureStorageService>(),
+      loginUseCase: getIt<LoginUseCase>(),
+      logoutUseCase: getIt<LogoutUseCase>(),
+      checkAuthStatusUseCase: getIt<CheckAuthStatusUseCase>(),
     ),
   );
+
   // Product Dependencies
   // Data sources
   getIt.registerLazySingleton<ProductRemoteDataSource>(
-    () => ProductRemoteDataSource(getIt()),
+    () => ProductRemoteDataSource(getIt<Dio>()),
   );
 
   getIt.registerLazySingleton<ProductLocalDataSource>(
@@ -66,20 +75,25 @@ Future<void> configureDependencies() async {
   );
 
   // Use cases
-  getIt.registerLazySingleton(() => FetchProductUseCase(getIt()));
-  getIt.registerLazySingleton(() => FetchProductByIdUseCase(getIt()));
-  getIt.registerLazySingleton(() => AddProductUseCase(getIt()));
-  getIt.registerLazySingleton(() => UpdateProductUseCase(getIt()));
-  getIt.registerLazySingleton(() => DeleteProductUseCase(getIt()));
+  getIt.registerLazySingleton(
+      () => FetchProductUseCase(getIt<ProductRepository>()));
+  getIt.registerLazySingleton(
+      () => FetchProductByIdUseCase(getIt<ProductRepository>()));
+  getIt.registerLazySingleton(
+      () => AddProductUseCase(getIt<ProductRepository>()));
+  getIt.registerLazySingleton(
+      () => UpdateProductUseCase(getIt<ProductRepository>()));
+  getIt.registerLazySingleton(
+      () => DeleteProductUseCase(getIt<ProductRepository>()));
 
   // Provider
   getIt.registerFactory(
     () => ProductProvider(
-      fetchProductsUseCase: getIt(),
-      fetchProductByIdUseCase: getIt(),
-      addProductUseCase: getIt(),
-      updateProductUseCase: getIt(),
-      deleteProductUseCase: getIt(),
+      fetchProductsUseCase: getIt<FetchProductUseCase>(),
+      fetchProductByIdUseCase: getIt<FetchProductByIdUseCase>(),
+      addProductUseCase: getIt<AddProductUseCase>(),
+      updateProductUseCase: getIt<UpdateProductUseCase>(),
+      deleteProductUseCase: getIt<DeleteProductUseCase>(),
     ),
   );
 }

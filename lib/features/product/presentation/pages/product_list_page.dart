@@ -1,5 +1,6 @@
 // features/product/presentation/screens/product_list_page.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_caching/core/utils/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_caching/features/product/domain/entities/product.dart';
 import 'package:flutter_caching/features/product/presentation/providers/product_provider.dart';
@@ -15,7 +16,7 @@ class _ProductListPageState extends State<ProductListPage> {
   @override
   void initState() {
     super.initState();
-   
+
     Future.microtask(() =>
         Provider.of<ProductProvider>(context, listen: false).fetchProducts());
   }
@@ -30,7 +31,7 @@ class _ProductListPageState extends State<ProductListPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => productProvider.fetchProducts(),
+            onPressed: () => productProvider.fetchProducts(forceRefresh: true),
           ),
         ],
       ),
@@ -44,6 +45,7 @@ class _ProductListPageState extends State<ProductListPage> {
                       itemCount: productProvider.products.length,
                       itemBuilder: (context, index) {
                         final product = productProvider.products[index];
+                        AppLogger.d('Produk ${product.id}: ${product.title}');
                         return ListTile(
                           title: Text(product.title),
                           subtitle: Text(
@@ -68,8 +70,8 @@ class _ProductListPageState extends State<ProductListPage> {
                             ],
                           ),
                           onTap: () async {
-                            final fetchedProduct =
-                                await productProvider.fetchProductById(product.id);
+                            final fetchedProduct = await productProvider
+                                .fetchProductById(product.id);
                             if (fetchedProduct != null) {
                               // ScaffoldMessenger.of(context).showSnackBar(
                               //   SnackBar(
@@ -106,12 +108,25 @@ class _ProductListPageState extends State<ProductListPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Title')),
-              TextField(controller: descriptionController, decoration: const InputDecoration(labelText: 'Description')),
-              TextField(controller: dueDateController, decoration: const InputDecoration(labelText: 'Due Date')),
-              TextField(controller: priorityController, decoration: const InputDecoration(labelText: 'Priority')),
-              TextField(controller: statusController, decoration: const InputDecoration(labelText: 'Status')),
-              TextField(controller: tagsController, decoration: const InputDecoration(labelText: 'Tags (comma separated)')),
+              TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: 'Title')),
+              TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description')),
+              TextField(
+                  controller: dueDateController,
+                  decoration: const InputDecoration(labelText: 'Due Date')),
+              TextField(
+                  controller: priorityController,
+                  decoration: const InputDecoration(labelText: 'Priority')),
+              TextField(
+                  controller: statusController,
+                  decoration: const InputDecoration(labelText: 'Status')),
+              TextField(
+                  controller: tagsController,
+                  decoration: const InputDecoration(
+                      labelText: 'Tags (comma separated)')),
             ],
           ),
         ),
@@ -123,15 +138,22 @@ class _ProductListPageState extends State<ProductListPage> {
           ElevatedButton(
             onPressed: () {
               final newProduct = Product(
-                id: DateTime.now().millisecondsSinceEpoch.toString(), 
+                id: int.parse(DateTime.now()
+                    .millisecondsSinceEpoch
+                    .toString()
+                    .substring(4)),
                 title: titleController.text,
                 description: descriptionController.text,
                 dueDate: dueDateController.text,
                 priority: priorityController.text,
                 status: statusController.text,
-                tags: tagsController.text.split(',').map((e) => e.trim()).toList(),
+                tags: tagsController.text
+                    .split(',')
+                    .map((e) => e.trim())
+                    .toList(),
               );
-              Provider.of<ProductProvider>(context, listen: false).addProduct(newProduct);
+              Provider.of<ProductProvider>(context, listen: false)
+                  .addProduct(newProduct);
               Navigator.of(ctx).pop();
             },
             child: const Text('Add'),
@@ -143,7 +165,8 @@ class _ProductListPageState extends State<ProductListPage> {
 
   void _showEditProductDialog(BuildContext context, Product product) {
     final titleController = TextEditingController(text: product.title);
-    final descriptionController = TextEditingController(text: product.description);
+    final descriptionController =
+        TextEditingController(text: product.description);
     final dueDateController = TextEditingController(text: product.dueDate);
     final priorityController = TextEditingController(text: product.priority);
     final statusController = TextEditingController(text: product.status);
@@ -157,12 +180,25 @@ class _ProductListPageState extends State<ProductListPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Title')),
-              TextField(controller: descriptionController, decoration: const InputDecoration(labelText: 'Description')),
-              TextField(controller: dueDateController, decoration: const InputDecoration(labelText: 'Due Date')),
-              TextField(controller: priorityController, decoration: const InputDecoration(labelText: 'Priority')),
-              TextField(controller: statusController, decoration: const InputDecoration(labelText: 'Status')),
-              TextField(controller: tagsController, decoration: const InputDecoration(labelText: 'Tags (comma separated)')),
+              TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: 'Title')),
+              TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description')),
+              TextField(
+                  controller: dueDateController,
+                  decoration: const InputDecoration(labelText: 'Due Date')),
+              TextField(
+                  controller: priorityController,
+                  decoration: const InputDecoration(labelText: 'Priority')),
+              TextField(
+                  controller: statusController,
+                  decoration: const InputDecoration(labelText: 'Status')),
+              TextField(
+                  controller: tagsController,
+                  decoration: const InputDecoration(
+                      labelText: 'Tags (comma separated)')),
             ],
           ),
         ),
@@ -180,9 +216,13 @@ class _ProductListPageState extends State<ProductListPage> {
                 dueDate: dueDateController.text,
                 priority: priorityController.text,
                 status: statusController.text,
-                tags: tagsController.text.split(',').map((e) => e.trim()).toList(),
+                tags: tagsController.text
+                    .split(',')
+                    .map((e) => e.trim())
+                    .toList(),
               );
-              Provider.of<ProductProvider>(context, listen: false).updateProduct(updatedProduct);
+              Provider.of<ProductProvider>(context, listen: false)
+                  .updateProduct(updatedProduct);
               Navigator.of(ctx).pop();
             },
             child: const Text('Update'),
@@ -192,7 +232,7 @@ class _ProductListPageState extends State<ProductListPage> {
     );
   }
 
-  void _confirmDeleteProduct(BuildContext context, String productId) {
+  void _confirmDeleteProduct(BuildContext context, int productId) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -205,7 +245,8 @@ class _ProductListPageState extends State<ProductListPage> {
           ),
           ElevatedButton(
             onPressed: () {
-              Provider.of<ProductProvider>(context, listen: false).deleteProduct(productId);
+              Provider.of<ProductProvider>(context, listen: false)
+                  .deleteProduct(productId);
               Navigator.of(ctx).pop();
             },
             child: const Text('Delete'),

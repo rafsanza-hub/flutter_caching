@@ -16,7 +16,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     AppLogger.d('Login with email: $email and password: $password');
     try {
       final response = await dio.post(
-        'http://10.0.2.2:3000/login',
+        'http://10.0.2.2:3000/auth',
         data: {
           'email': email,
           'password': password,

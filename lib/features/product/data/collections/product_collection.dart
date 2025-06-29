@@ -9,7 +9,7 @@ class ProductCollection {
   Id isarId;
 
   @Index(unique: true, replace: true)
-  late String id;
+  late int id;
   late String title;
   late String description;
   late String dueDate;
@@ -44,7 +44,7 @@ class ProductCollection {
 
   static ProductCollection fromEntity(Product product) {
     return ProductCollection(
-      isarId: int.parse(product.id),
+      isarId: product.id,
       id: product.id,
       title: product.title,
       description: product.description,
@@ -69,7 +69,7 @@ class ProductCollection {
 
   static ProductCollection fromModel(ProductModel model) {
     return ProductCollection(
-      isarId: int.parse(model.id),
+      isarId: model.id,
       id: model.id,
       title: model.title,
       description: model.description,

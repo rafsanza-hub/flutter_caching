@@ -2,7 +2,7 @@ import 'package:flutter_caching/features/product/data/collections/product_collec
 import 'package:flutter_caching/features/product/domain/entities/product.dart';
 
 class ProductModel {
-  final String id;
+  final int id;
   final String title;
   final String description;
   final String dueDate;
@@ -34,7 +34,7 @@ class ProductModel {
 
   factory ProductModel.fromMap(Map<String, dynamic> map) {
     return ProductModel(
-      id: map['id'] as String,
+      id: map['id'] as int,
       title: map['title'] as String,
       description: map['description'] as String,
       dueDate: map['dueDate'] as String,
@@ -73,7 +73,7 @@ class ProductModel {
 
   ProductCollection toCollection() {
     return ProductCollection(
-      isarId: int.parse(id),
+      isarId: id,
       id: id,
       title: title,
       description: description,

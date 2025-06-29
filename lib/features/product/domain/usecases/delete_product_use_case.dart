@@ -6,7 +6,7 @@ class DeleteProductUseCase {
 
   DeleteProductUseCase(this._productRepository);
 
-  Future<void> call(String productId) async {
+  Future<void> call(int productId) async {
     await _productRepository.deleteProduct(productId);
   }
 }

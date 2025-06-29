@@ -8,7 +8,7 @@ class FetchProductUseCase {
 
   FetchProductUseCase(this._productRepository);
 
-  Future<List<Product>> call() async {
-   return await _productRepository.fetchProducts();
+  Future<List<Product>> call({bool forceRefresh = false}) async {
+   return await _productRepository.fetchProducts(forceRefresh: forceRefresh);
   }
 }

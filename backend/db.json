@@ -4,6 +4,11 @@
       "email": "admin1@mail.com",
       "password": "$2a$10$WCUiCKzG8/9jQAlVSKkl0.J14stEQasgYgVlzS1NLbMgTYpL3j/7e",
       "id": 1
+    },
+    {
+      "email": "rafsan@mail.com",
+      "password": "$2a$10$pQo1wIJhFIDyOjo5AIH31u81GXpI28RBTiYVC/gkbusGXgSeciBzi",
+      "id": 2
     }
   ],
   "products": [

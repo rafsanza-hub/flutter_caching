@@ -19,76 +19,55 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<List<Product>> fetchProducts({bool forceRefresh = false}) async {
+    AppLogger.d('forceRefresh: $forceRefresh');
     if (!forceRefresh) {
       try {
         final cachedProducts = await localDataSource.getCachedProducts();
         final lastCacheTime = await localDataSource.getLastCacheTimestamp();
 
-        if (cachedProducts.isNotEmpty &&
+        final isValid = cachedProducts.isNotEmpty &&
             lastCacheTime != null &&
-            DateTime.now().difference(lastCacheTime) < cacheTTL) {
-          AppLogger.d('Mengambil produk dari cache lokal yang valid.');
+            DateTime.now().difference(lastCacheTime) < cacheTTL;
+
+        if (isValid) {
+          AppLogger.d('[Repository] Ambil dari cache');
           return cachedProducts.map((e) => e.toEntity()).toList();
-        } else if (cachedProducts.isNotEmpty &&
-            lastCacheTime != null &&
-            DateTime.now().difference(lastCacheTime) >= cacheTTL) {
-          AppLogger.d(
-              'Cache lokal kadaluwarsa, akan mencoba ambil dari remote.');
         }
-      } on CacheException catch (e) {
-        AppLogger.d(
-            'Error membaca dari cache: ${e.message}. Mencoba dari remote.');
+        if (cachedProducts.isNotEmpty) {
+          AppLogger.d('[Repository] Cache expired, coba ambil dari remote');
+        }
       } catch (e) {
-        AppLogger.d(
-            'Terjadi error tak terduga saat membaca cache: $e. Mencoba dari remote.');
+        AppLogger.e('[Repository] Cache error, coba remote: $e');
       }
     }
 
-    // Ambil dari remote dan perbarui cache
     try {
-      AppLogger.d('Mengambil produk dari remote.');
+      AppLogger.d('[Repository] Ambil dari remote');
       final remoteProducts = await remoteDataSource.fetchProducts();
-      // Simpan ke lokal cache dan perbarui timestamp
+
+      // Cache ke lokal
       await localDataSource
           .cacheProducts(remoteProducts.map((e) => e.toCollection()).toList());
-      await localDataSource
-          .updateLastCacheTimestamp(DateTime.now()); // Simpan timestamp
+      await localDataSource.updateLastCacheTimestamp(DateTime.now());
+
       return remoteProducts.map((e) => e.toEntity()).toList();
-    } on NetworkException catch (e) {
-      AppLogger.d(
-          'Error jaringan: ${e.message}. Mengambil dari cache sebagai fallback.');
-      try {
-        final localProducts = await localDataSource.getCachedProducts();
-        if (localProducts.isNotEmpty) {
-          return localProducts.map((e) => e.toEntity()).toList();
-        } else {
-          // Jika tidak ada di cache sama sekali, lempar error asli
-          throw NetworkException(
-              'Tidak ada koneksi dan tidak ada data yang di-cache.');
-        }
-      } on CacheException catch (e) {
-        throw CacheException(
-            'Gagal mengambil dari cache setelah error jaringan: ${e.message}');
-      }
     } catch (e) {
-      AppLogger.d(
-          'Terjadi error tak terduga saat fetch dari remote: $e. Mencoba dari cache.');
+      AppLogger.e('[Repository] Error remote: $e. Fallback ke cache.');
       try {
-        final localProducts = await localDataSource.getCachedProducts();
-        if (localProducts.isNotEmpty) {
-          return localProducts.map((e) => e.toEntity()).toList();
+        final fallback = await localDataSource.getCachedProducts();
+        if (fallback.isNotEmpty) {
+          return fallback.map((e) => e.toEntity()).toList();
         } else {
-          rethrow; // Lempar error asli jika tidak ada data di cache
+          throw Exception('Gagal fetch remote dan cache kosong.');
         }
-      } on CacheException catch (e) {
-        throw CacheException(
-            'Gagal mengambil dari cache setelah error tak terduga: ${e.message}');
+      } catch (e2) {
+        throw Exception('Gagal ambil data: $e2');
       }
     }
   }
 
   @override
-  Future<Product> fetchProductById(String id) async {
+  Future<Product> fetchProductById(int id) async {
     try {
       AppLogger.d('Mengambil detail produk $id dari remote.');
       final remoteProduct = await remoteDataSource.fetchProductById(id);
@@ -128,7 +107,10 @@ class ProductRepositoryImpl implements ProductRepository {
 
   @override
   Future<void> addProduct(Product product) async {
+    AppLogger.d('Menambahkan produk: ${product.id}');
     final model = ProductModel.fromEntity(product);
+    AppLogger.d('Menambahkan produk: ${model.id}');
+
     final collection = model.toCollection();
     try {
       await remoteDataSource.addProduct(model);
@@ -147,6 +129,7 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<void> updateProduct(Product product) async {
     final model = ProductModel.fromEntity(product);
     final collection = model.toCollection();
+    AppLogger.d('Memperbarui produk: ${product.id}');
     try {
       await remoteDataSource.updateProduct(product.id, model);
       await localDataSource
@@ -161,7 +144,7 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<void> deleteProduct(String id) async {
+  Future<void> deleteProduct(int id) async {
     try {
       await remoteDataSource.deleteProduct(id);
       await localDataSource.deleteProduct(id);

@@ -6,7 +6,6 @@ import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'product_local_data_source.dart';
 
-
 class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   static late final Future<Isar> _isarDb;
   static bool _isInitialized = false;
@@ -88,16 +87,15 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<void> deleteProduct(String id) async {
+  Future<void> deleteProduct(int id) async {
     try {
       final isar = await _isarDb;
       await isar.writeTxn(() async {
-        final deletedCount = await isar.productCollections
-            .filter()
-            .idEqualTo(id)
-            .deleteAll();
+        final deletedCount =
+            await isar.productCollections.filter().idEqualTo(id).deleteAll();
         if (deletedCount == 0) {
-          AppLogger.d('Produk dengan ID $id tidak ditemukan di cache untuk dihapus.');
+          AppLogger.d(
+              'Produk dengan ID $id tidak ditemukan di cache untuk dihapus.');
         } else {
           AppLogger.d('Produk dengan ID $id berhasil dihapus dari cache Isar.');
         }
@@ -108,10 +106,10 @@ class ProductLocalDataSourceImpl implements ProductLocalDataSource {
   }
 
   @override
-  Future<ProductCollection?> getCachedProductById(String id) async {
+  Future<ProductCollection?> getCachedProductById(int id) async {
     try {
       final isar = await _isarDb;
-      final product = await isar.productCollections.get(int.parse(id));
+      final product = await isar.productCollections.get(id);
       if (product == null) {
         AppLogger.d('Produk $id tidak ditemukan di cache.');
       } else {
